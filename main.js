@@ -5,8 +5,8 @@ const cancelBtn = document.querySelector("#cancel");
 const createModal = document.querySelector("#createModal");
 const openModal = document.querySelector("#openModal");
 const saveBtn = document.querySelector("#save");
-const toast = document.querySelector("#toast")
-const searchCompany = document.querySelector("#searchCompany")
+const toast = document.querySelector("#toast");
+const searchCompany = document.querySelector("#searchCompany");
 domRender();
 let editId = null;
 async function getAllData() {
@@ -16,14 +16,14 @@ async function getAllData() {
     return data;
   } catch (error) {
     console.log(error.message);
-     return [];
+    return [];
   } finally {
     console.log("finsih");
   }
 }
 
-async function domRender() {
-  const info = await getAllData();
+async function domRender(data = null) {
+  const info = data || (await getAllData());
   companyElem.innerHTML = "";
   info.forEach((company) => {
     companyElem.innerHTML += `
@@ -90,43 +90,42 @@ companyForm.addEventListener("submit", (e) => {
   };
   saveBtn.disabled = true;
   if (editId) {
-      fetch(`${url}/${editId}`, {
-    method: "put",
-    body: JSON.stringify(newCompany),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then(() => domRender())
-    .catch((err) => console.error("Xəta:", err))
-    .finally(() => {
-      createModal.classList.add("hidden");
-      companyForm.reset();
-      saveBtn.disabled = false;
-      editId = null
-    });
+    fetch(`${url}/${editId}`, {
+      method: "put",
+      body: JSON.stringify(newCompany),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(() => domRender())
+      .catch((err) => console.error("Xəta:", err))
+      .finally(() => {
+        createModal.classList.add("hidden");
+        companyForm.reset();
+        saveBtn.disabled = false;
+        editId = null;
+      });
   } else {
-      fetch(url, {
-    method: "POST",
-    body: JSON.stringify(newCompany),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then(() => {
+    fetch(url, {
+      method: "POST",
+      body: JSON.stringify(newCompany),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(() => {
         showToast("Məlumat uğurla əlavə olundu ✅");
-        domRender()
-    })
-    .catch((err) => {
-        console.error("Xəta:", err)
-        showToast("Xəta baş verdi ❌", "bg-red-500")
-    })
-    .finally(() => {
-      createModal.classList.add("hidden");
-      companyForm.reset();
-      saveBtn.disabled = false;
-    
-    });
+        domRender();
+      })
+      .catch((err) => {
+        console.error("Xəta:", err);
+        showToast("Xəta baş verdi ❌", "bg-red-500");
+      })
+      .finally(() => {
+        createModal.classList.add("hidden");
+        companyForm.reset();
+        saveBtn.disabled = false;
+      });
   }
 });
 
@@ -140,10 +139,12 @@ openModal.addEventListener("click", () => {
 function deleteCompany(id) {
   fetch(`${url}/${id}`, {
     method: "delete",
-  }).then(() => {
-    showToast("Məlumat uğurla silindi ✅");
-    domRender()
-  }).catch((err) => {
+  })
+    .then(() => {
+      showToast("Məlumat uğurla silindi ✅");
+      domRender();
+    })
+    .catch((err) => {
       console.error(err);
       showToast("Xəta baş verdi ❌", "bg-red-500");
     });
@@ -152,24 +153,24 @@ function deleteCompany(id) {
 function editCompany(id) {
   editId = id;
   createModal.classList.remove("hidden");
-  fetch(`${url}/${id}`).then(res => res.json()).then(data=>{
-    companyForm.companyName.value = data.companyName
-    companyForm.contactName.value = data.contactName
-    companyForm.contactTitle.value = data.contactTitle
-    companyForm.street.value = data.address.street
-    companyForm.city.value = data.address.city
-    companyForm.region.value = data.address.region
-    companyForm.postalCode.value = data.address.postalCode
-    companyForm.country.value = data.address.country
-    companyForm.phone.value = data.address.phone
-  })
+  fetch(`${url}/${id}`)
+    .then((res) => res.json())
+    .then((data) => {
+      companyForm.companyName.value = data.companyName;
+      companyForm.contactName.value = data.contactName;
+      companyForm.contactTitle.value = data.contactTitle;
+      companyForm.street.value = data.address.street;
+      companyForm.city.value = data.address.city;
+      companyForm.region.value = data.address.region;
+      companyForm.postalCode.value = data.address.postalCode;
+      companyForm.country.value = data.address.country;
+      companyForm.phone.value = data.address.phone;
+    });
 }
 
-
 function showToast(message, color = "bg-green-500") {
-
   toast.textContent = message;
- 
+
   toast.classList.remove("hidden");
 
   setTimeout(() => {
@@ -177,25 +178,19 @@ function showToast(message, color = "bg-green-500") {
   }, 3000);
 }
 
+searchCompany.addEventListener("input", async () => {
+  const val = searchCompany.value.toLowerCase();
 
+  const data = await getAllData();
 
-// searchCompany.addEventListener("input" ,async ()=>{
-//       if (!val) {
-//     domRender(data);
-//     return;
-//   }
-//     const val = searchCompany.value.toLowerCase();
-    
-//      const data = await getAllData();
+  const filtered = data.filter(
+    (company) =>
+      company.companyName?.toLowerCase().includes(val) ||
+      company.contactName?.toLowerCase().includes(val) ||
+      company.contactTitle?.toLowerCase().includes(val) ||
+      company.address.city?.toLowerCase().includes(val) ||
+      company.address.country?.toLowerCase().includes(val)
+  );
 
-//   const filtered = data.filter(company =>
-//     company.companyName?.toLowerCase().includes(val) ||
-//     company.contactName?.toLowerCase().includes(val) ||
-//     company.contactTitle?.toLowerCase().includes(val) ||
-//     company.address.city?.toLowerCase().includes(val) ||
-//     company.address.country?.toLowerCase().includes(val)
-//   );
-
-//   domRender(filtered);
-    
-// })
+  domRender(filtered);
+});
