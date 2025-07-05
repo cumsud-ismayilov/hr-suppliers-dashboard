@@ -16,13 +16,14 @@ async function getAllData() {
     return data;
   } catch (error) {
     console.log(error.message);
+     return [];
   } finally {
     console.log("finsih");
   }
 }
 
-async function domRender(data = null) {
-  const info = data || await getAllData();
+async function domRender() {
+  const info = await getAllData();
   companyElem.innerHTML = "";
   info.forEach((company) => {
     companyElem.innerHTML += `
@@ -178,19 +179,23 @@ function showToast(message, color = "bg-green-500") {
 
 
 
-searchCompany.addEventListener("input" ,async ()=>{
-    const val = searchCompany.value.toLowerCase();
+// searchCompany.addEventListener("input" ,async ()=>{
+//       if (!val) {
+//     domRender(data);
+//     return;
+//   }
+//     const val = searchCompany.value.toLowerCase();
     
-     const data = await getAllData();
+//      const data = await getAllData();
 
-  const filtered = data.filter(company =>
-    company.companyName?.toLowerCase().includes(val) ||
-    company.contactName?.toLowerCase().includes(val) ||
-    company.contactTitle?.toLowerCase().includes(val) ||
-    company.address.city?.toLowerCase().includes(val) ||
-    company.address.country?.toLowerCase().includes(val)
-  );
+//   const filtered = data.filter(company =>
+//     company.companyName?.toLowerCase().includes(val) ||
+//     company.contactName?.toLowerCase().includes(val) ||
+//     company.contactTitle?.toLowerCase().includes(val) ||
+//     company.address.city?.toLowerCase().includes(val) ||
+//     company.address.country?.toLowerCase().includes(val)
+//   );
 
-  domRender(filtered);
+//   domRender(filtered);
     
-})
+// })
